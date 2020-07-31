@@ -17,9 +17,10 @@ func init() {
 	_ = view.Register(ocsql.DefaultViews...)
 }
 
-func New() (db *sql.DB, cleanup func(), err error) {
+// Open a db connection with tracing
+func Open(url string) (db *sql.DB, cleanup func(), err error) {
 	var connector driver.Connector
-	connector, err = pq.NewConnector(os.Getenv("DATABASE_URL"))
+	connector, err = pq.NewConnector(url)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -29,4 +30,9 @@ func New() (db *sql.DB, cleanup func(), err error) {
 		_ = db.Close()
 	}
 	return
+}
+
+// New open a db connection with tracing with environment variable DATABASE_URL
+func New() (db *sql.DB, cleanup func(), err error) {
+	return Open(os.Getenv("DATABASE_URL"))
 }
