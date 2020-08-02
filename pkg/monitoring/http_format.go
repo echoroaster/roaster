@@ -6,29 +6,32 @@ import (
 	xray "contrib.go.opencensus.io/exporter/aws"
 	jaeger "contrib.go.opencensus.io/exporter/jaeger/propagation"
 	stackdriver "contrib.go.opencensus.io/exporter/stackdriver/propagation"
+	"go.opencensus.io/plugin/ochttp/propagation/b3"
 	"go.opencensus.io/trace"
 	"go.opencensus.io/trace/propagation"
 )
 
-var HttpFormat = httpFormat{
-	"X-Amzn-Trace-Id":       new(xray.HTTPFormat),
-	"uber-trace-id":         new(jaeger.HTTPFormat),
-	"X-Cloud-Trace-Context": new(stackdriver.HTTPFormat),
+var HTTPFormat = CombinedHTTPFormat{
+	&b3.HTTPFormat{},
+	&jaeger.HTTPFormat{},
+	&stackdriver.HTTPFormat{},
+	&xray.HTTPFormat{},
 }
 
-type httpFormat map[string]propagation.HTTPFormat
+type CombinedHTTPFormat []propagation.HTTPFormat
 
-func (f httpFormat) SpanContextFromRequest(req *http.Request) (sc trace.SpanContext, ok bool) {
-	for header, format := range f {
-		if req.Header.Get(header) != "" {
-			return format.SpanContextFromRequest(req)
+func (hf CombinedHTTPFormat) SpanContextFromRequest(req *http.Request) (trace.SpanContext, bool) {
+	for _, format := range hf {
+		if sc, ok := format.SpanContextFromRequest(req); ok {
+			return sc, ok
 		}
 	}
+
 	return trace.SpanContext{}, false
 }
 
-func (f httpFormat) SpanContextToRequest(sc trace.SpanContext, req *http.Request) {
-	for _, format := range f {
+func (hf CombinedHTTPFormat) SpanContextToRequest(sc trace.SpanContext, req *http.Request) {
+	for _, format := range hf {
 		format.SpanContextToRequest(sc, req)
 	}
 }
