@@ -3,6 +3,7 @@ package httpclient // import "github.com/echoroaster/roaster/pkg/httpclient"
 import (
 	"net/http"
 
+	"github.com/echoroaster/roaster/pkg/monitoring"
 	"go.opencensus.io/plugin/ochttp"
 )
 
@@ -11,6 +12,7 @@ func wrapTraceTransport(base http.RoundTripper) *ochttp.Transport {
 		base = http.DefaultTransport
 	}
 	return &ochttp.Transport{
-		Base: base,
+		Base:        base,
+		Propagation: monitoring.HTTPFormat,
 	}
 }
