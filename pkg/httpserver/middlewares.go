@@ -31,7 +31,7 @@ func MakeHandler(
 	return MiddlewareChain{
 		MiddlewareFunc(func(next http.Handler) http.Handler {
 			return &ochttp.Handler{
-				Propagation: monitoring.HttpFormat,
+				Propagation: monitoring.HTTPFormat,
 				Handler:     next,
 			}
 		}),
