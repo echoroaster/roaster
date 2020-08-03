@@ -18,6 +18,6 @@ func newTransport(
 ) (t http.RoundTripper) {
 	t = http.DefaultTransport
 	t = auth.WrapTransport(t, tokenSource)
-	t = wrapTraceTransport(t)
+	t = WrapTraceTransport(t)
 	return
 }

@@ -7,7 +7,7 @@ import (
 	"go.opencensus.io/plugin/ochttp"
 )
 
-func wrapTraceTransport(base http.RoundTripper) *ochttp.Transport {
+func WrapTraceTransport(base http.RoundTripper) *ochttp.Transport {
 	if base == nil {
 		base = http.DefaultTransport
 	}
