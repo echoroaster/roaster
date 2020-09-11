@@ -9,9 +9,17 @@ import (
 	"gopkg.in/square/go-jose.v2/jwt"
 )
 
-type Token struct {
+type KeycloakToken struct {
 	jwt.Claims
-	Roles map[string][]string `json:"roles.omitempty"`
+	AuthorizedParty string                    `json:"azp,omitempty"`
+	RealmAccess     *ResourceAccess           `json:"realm_access,omitempty"`
+	ResourceAccess  map[string]ResourceAccess `json:"resource_access,omitempty"`
+	ClientId        string                    `json:"clientId,omitempty"`
+	Scope           string                    `json:"scope,omitempty"`
+}
+
+type ResourceAccess struct {
+	Roles []string `json:"roles"`
 }
 
 func NewRemoteKeySet(ctx context.Context, provider *oidc.Provider) (oidc.KeySet, error) {
@@ -28,14 +36,14 @@ type Validator struct {
 	KeySet oidc.KeySet
 }
 
-func (v *Validator) Verify(ctx context.Context, token string) (t *Token, err error) {
+func (v *Validator) Verify(ctx context.Context, token string) (t *KeycloakToken, err error) {
 	ctx, span := trace.StartSpan(ctx, "auth.Validator.Verify")
 	defer span.End()
 	payload, err := v.KeySet.VerifySignature(ctx, token)
 	if err != nil {
 		return nil, err
 	}
-	t = new(Token)
-	err = json.Unmarshal(payload, &t)
+	t = new(KeycloakToken)
+	err = json.Unmarshal(payload, t)
 	return
 }

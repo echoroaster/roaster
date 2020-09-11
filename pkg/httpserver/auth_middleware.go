@@ -34,7 +34,7 @@ func (h *authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.Next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), TokenCtxKey, token)))
 }
 
-func (h *authHandler) validateToken(ctx context.Context, w http.ResponseWriter, r *http.Request) (token *auth.Token, validate bool) {
+func (h *authHandler) validateToken(ctx context.Context, w http.ResponseWriter, r *http.Request) (token *auth.KeycloakToken, validate bool) {
 	headerValue := r.Header.Get("Authorization")
 	if headerValue == "" {
 		w.WriteHeader(http.StatusUnauthorized)
