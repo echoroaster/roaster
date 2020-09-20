@@ -12,19 +12,33 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-//+build wireinject
-
 package logging
 
 import (
-	"github.com/google/wire"
+	"os"
+
 	"github.com/sirupsen/logrus"
 )
 
-var LegacySet = wire.NewSet(
-	wire.InterfaceValue(new(logrus.FieldLogger), RootLogger),
-)
+// Deprecated
+var RootLogger = logrus.New()
 
-var Set = wire.NewSet(
-	NewLogger,
-)
+func init() {
+	if os.Getenv("DEBUG") != "" {
+		RootLogger.SetLevel(logrus.DebugLevel)
+	} else {
+		switch os.Getenv("LOG_LEVEL") {
+		case "trace":
+			RootLogger.SetLevel(logrus.TraceLevel)
+		case "debug":
+			RootLogger.SetLevel(logrus.DebugLevel)
+		case "info":
+			RootLogger.SetLevel(logrus.InfoLevel)
+		case "warn":
+			RootLogger.SetLevel(logrus.WarnLevel)
+		case "error":
+			RootLogger.SetLevel(logrus.ErrorLevel)
+		default:
+		}
+	}
+}

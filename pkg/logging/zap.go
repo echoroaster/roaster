@@ -15,31 +15,36 @@
 package logging // import "github.com/echoroaster/roaster/pkg/logging"
 
 import (
-	"errors"
-	"os"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-var ErrUnsupportedDriver = errors.New("logging: unsupported logging driver")
+func newZapLogger(hooks []logHook) (logger Logger, cleanup func(), err error) {
+	var zapLogger *zap.Logger
+	zapLogger, cleanup, err = newZap(hooks)
+	if err != nil {
+		return
+	}
+	logger = &zapFormatAdapter{&zapAdapter{zapLogger}}
+	return
+}
 
-func NewLogger() (logger Logger, cleanup func(), err error) {
-	hooks := make([]logHook, 0, 1)
-	if os.Getenv("AWS_CLOUDWATCHLOGS_GROUP_NAME") != "" {
-		hook, err := newCloudWatchLoggerHook()
-		if err != nil {
-			return nil, nil, err
-		}
-		hooks = append(hooks, hook)
+func newZap(hooks []logHook) (logger *zap.Logger, cleanup func(), err error) {
+	zapHooks := make([]func(entry zapcore.Entry) error, len(hooks))
+	for idx, hook := range hooks {
+		zapHooks[idx] = zapHookAdapter(hook)
 	}
 
-	loggerDriver := os.Getenv("LOGGER_DRIVER")
-	if loggerDriver == "" {
-		loggerDriver = "zap"
+	logger, err = zap.NewProduction(
+		zap.AddCaller(),
+		zap.Hooks(zapHooks...),
+	)
+
+	if err != nil {
+		return
 	}
-	switch loggerDriver {
-	case "logrus":
-		return newLogrusLogger(hooks)
-	case "zap":
-		return newZapLogger(hooks)
+	cleanup = func() {
+		_ = logger.Sync()
 	}
-	return nil, nil, ErrUnsupportedDriver
+	return
 }

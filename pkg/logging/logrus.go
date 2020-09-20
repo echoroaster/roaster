@@ -12,19 +12,13 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-//+build wireinject
-
 package logging
 
-import (
-	"github.com/google/wire"
-	"github.com/sirupsen/logrus"
-)
-
-var LegacySet = wire.NewSet(
-	wire.InterfaceValue(new(logrus.FieldLogger), RootLogger),
-)
-
-var Set = wire.NewSet(
-	NewLogger,
-)
+func newLogrusLogger(hooks []logHook) (logger Logger, cleanup func(), err error) {
+	logger = &logrusAdapter{RootLogger}
+	cleanup = func() {}
+	for _, hook := range hooks {
+		RootLogger.AddHook(&logrusHookAdapter{hook})
+	}
+	return
+}
