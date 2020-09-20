@@ -6,12 +6,14 @@
 package httpclient
 
 import (
-	"golang.org/x/oauth2"
 	"net/http"
+
+	"golang.org/x/oauth2"
 )
 
 // Injectors from wire.go:
 
+// Deprecated: compose by yourself
 func NewClient(tokenSource oauth2.TokenSource) *http.Client {
 	roundTripper := newTransport(tokenSource)
 	client := newClient(roundTripper)
