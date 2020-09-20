@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/handlers"
 )
 
-var corsMiddleware Middleware
+var CorsMiddleware Middleware
 
 func init() {
 	options := []handlers.CORSOption{
@@ -19,5 +19,5 @@ func init() {
 	if allowedOrigin := os.Getenv("CORS_ALLOWED_ORIGIN"); allowedOrigin != "" {
 		options = append(options, handlers.AllowedOrigins(strings.Split(allowedOrigin, ",")))
 	}
-	corsMiddleware = MiddlewareFunc(handlers.CORS(options...))
+	CorsMiddleware = MiddlewareFunc(handlers.CORS(options...))
 }

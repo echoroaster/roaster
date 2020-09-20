@@ -1,4 +1,4 @@
-package httpserver
+package httpserver // import "github.com/echoroaster/roaster/pkg/httpserver"
 
 import (
 	"net/http"
