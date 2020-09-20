@@ -7,6 +7,7 @@ import (
 	"go.opencensus.io/plugin/ochttp"
 )
 
+// Deprecated: use monitoring.WrapTransport instead
 func WrapTraceTransport(base http.RoundTripper) *ochttp.Transport {
 	if base == nil {
 		base = http.DefaultTransport
